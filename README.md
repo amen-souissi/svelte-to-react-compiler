@@ -32,6 +32,7 @@ It uses similar dependencies to svelte.js (except for HTML parsing).
 
 - [acorn](https://www.npmjs.com/package/acorn): Parses JavaScript text into AST.
 - [code-red](https://www.npmjs.com/package/code-red): Generates JavaScript AST from template strings. Converts AST back to string.
+- [estree-walker](https://github.com/Rich-Harris/estree-walker): Traverse an ESTree-compliant AST.
 - [parse5](https://www.npmjs.com/package/parse5): Parses HTML tags.
 
 ## Usage
