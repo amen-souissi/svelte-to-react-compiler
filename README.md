@@ -66,7 +66,7 @@ It generates a JavaScript file that looks like this:
 import * as React from "react";
 
 export default function Component({ count, name }) {
-  const [countState, setCountState] = React.useSate(count);
+  const [countState, setCountState] = React.useState(count);
 
   React.useEffect(() => {
     setCountState(count);

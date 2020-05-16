@@ -101,7 +101,7 @@ const propToUseState = (state) => {
         },
         init: {
           type: "CallExpression",
-          callee: { type: "Identifier", name: "React.useSate" },
+          callee: { type: "Identifier", name: "React.useState" },
           arguments: [{ type: "Identifier", name: state.prop }],
         },
       },
