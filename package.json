@@ -1,0 +1,38 @@
+{
+  "name": "svelte-to-react",
+  "version": "0.0.1",
+  "description": "Svelte to React",
+  "main": "index.js",
+  "repository": "https://github.com/joshnuss/msv",
+  "author": "Amen SOUISSI",
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "bin": {
+    "svelte-to-react": "./cli.js"
+  },
+  "babel": {
+    "presets": [
+      "latest"
+    ]
+  },
+  "devDependencies": {
+    "babel-preset-latest": "6.24.1",
+    "eslint": "~7.0.0",
+    "eslint-config-standard": "~14.1.1",
+    "eslint-plugin-import": "~2.20.2",
+    "eslint-plugin-node": "~11.1.0",
+    "eslint-plugin-promise": "4.2.1",
+    "eslint-plugin-standard": "4.0.1"
+  },
+  "dependencies": {
+    "acorn": "~7.2.0",
+    "acorn-jsx": "~5.2.0",
+    "astring": "~1.4.3",
+    "astring-jsx": "git+https://git@github.com/amen-souissi/astring-jsx.git",
+    "code-red": "0.1.1",
+    "parse5": "~6.0.0",
+    "prettier": "~2.0.5"
+  }
+}
