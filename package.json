@@ -32,6 +32,7 @@
     "astring": "~1.4.3",
     "astring-jsx": "git+https://git@github.com/amen-souissi/astring-jsx.git",
     "code-red": "0.1.1",
+    "estree-walker": "~2.0.1",
     "parse5": "~6.0.0",
     "prettier": "~2.0.5"
   }

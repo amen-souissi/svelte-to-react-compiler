@@ -2,6 +2,7 @@ import { print } from "code-red";
 import { Parser } from "acorn";
 import jsx from "acorn-jsx";
 import jsxGenerate from "astring-jsx";
+import { walk } from "estree-walker";
 
 const JSXParser = Parser.extend(jsx());
 
@@ -50,10 +51,12 @@ const eventListenerToString = (listner) => {
   }
 };
 
-const nodeJSX = (node, children) => {
+const nodeJSX = (node, children, states) => {
   switch (node.type) {
-    case "binding":
-      return `{${node.name}}`;
+    case "binding": {
+      const state = states.find((state) => state.prop === node.name);
+      return `{${state ? state.name : node.name}}`;
+    }
     case "element": {
       const listeners = node.listeners.map((listener) => eventListenerToString(listener)).join(" ");
       const attrs = attrsToString(node.attrs);
@@ -64,25 +67,118 @@ const nodeJSX = (node, children) => {
   }
 };
 
-const nodesToJSX = (nodes) => {
+const nodesToJSX = (nodes, states) => {
   return nodes.map((node) => {
-    const children = nodesToJSX(node.children);
-    return nodeJSX(node, children);
+    const children = nodesToJSX(node.children, states);
+    return nodeJSX(node, children, states);
   });
+};
+
+const getFuncCall = (funcName, args) => {
+  return {
+    type: "ExpressionStatement",
+    expression: {
+      type: "CallExpression",
+      callee: { type: "Identifier", start: 76, end: 81, name: funcName },
+      arguments: args,
+    },
+  };
+};
+
+const propToUseState = (state) => {
+  const elements = [
+    { type: "Identifier", name: state.name },
+    { type: "Identifier", name: state.setter },
+  ];
+  return {
+    type: "VariableDeclaration",
+    declarations: [
+      {
+        type: "VariableDeclarator",
+        id: {
+          type: "ArrayPattern",
+          elements: elements,
+        },
+        init: {
+          type: "CallExpression",
+          callee: { type: "Identifier", name: "React.useSate" },
+          arguments: [{ type: "Identifier", name: state.prop }],
+        },
+      },
+    ],
+    kind: "const",
+  };
+};
+
+const stateToUseEffect = (state) => {
+  return {
+    type: "CallExpression",
+    callee: {
+      type: "MemberExpression",
+      object: { type: "Identifier", name: "React" },
+      property: { type: "Identifier", name: "useEffect" },
+    },
+    arguments: [
+      {
+        type: "ArrowFunctionExpression",
+        params: [],
+        body: {
+          type: "BlockStatement",
+          body: [
+            {
+              type: "ExpressionStatement",
+              expression: {
+                type: "CallExpression",
+                callee: {
+                  type: "Identifier",
+                  name: state.setter,
+                },
+                arguments: [{ type: "Identifier", name: state.prop }],
+              },
+            },
+          ],
+        },
+      },
+      {
+        type: "ArrayExpression",
+        elements: [{ type: "Identifier", name: state.prop }],
+      },
+    ],
+  };
 };
 
 const ComponentGenerator = {
   generate(props, nodes, listeners, rest, fileName) {
     const root = nodesToTree(nodes, listeners);
+    const states = [];
+    walk(rest, {
+      enter: function (node) {
+        if (
+          node.type === "ExpressionStatement" &&
+          node.expression.type === "AssignmentExpression" &&
+          props.includes(node.expression.left.name)
+        ) {
+          const { name } = node.expression.left;
+          const state = `${name}State`;
+          const funcName = `set${state.charAt(0).toUpperCase() + state.slice(1)}`;
+          states.push({ name: state, prop: name, setter: funcName });
+          this.replace(getFuncCall(funcName, [node.expression.right]));
+        }
+      },
+    });
+    const useEffects = states.map((state) => stateToUseEffect(state));
+    rest.unshift(...useEffects);
+    const useStates = states.map((state) => propToUseState(state));
+    rest.unshift(...useStates);
     const jsCode = print(rest).code;
     const componentName = fileName.charAt(0).toUpperCase() + fileName.slice(1);
-    const componentProps = props.join(",");
-    const componentJSX = nodesToJSX([root]);
+    const componentProps = props.length ? `{${props.join(",")}}` : "";
+    const componentJSX = nodesToJSX([root], states);
 
     const component = `
     import * as React from "react"
 
-    export default function ${componentName}({${componentProps}}) {
+    export default function ${componentName}(${componentProps}) {
       
       ${jsCode}
       

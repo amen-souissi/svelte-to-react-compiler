@@ -40,15 +40,16 @@ Say you have a `.svelte` file like `examples/component.svelte`:
 
 ```html
 <script>
+  export let count;
   export let name;
 
-  function handleClick(e) {
+  function reset(e) {
     e.preventDefault();
-    alert(`Hello ${name}!`);
+    count = 0;
   }
 </script>
 
-<h1 class="{name}" on:click="handleClick">Hello {name}!</h1>
+<h1 class="c1" on:click="reset">Hello {name} {count}!</h1>
 <div>Svelte to <b>React</b>!</div>
 ```
 
@@ -63,15 +64,21 @@ It generates a JavaScript file that looks like this:
 ```js
 import * as React from "react";
 
-export default function Component({ name }) {
-  function handleClick(e) {
+export default function Component({ count, name }) {
+  const [countState, setCountState] = React.useSate(count);
+
+  React.useEffect(() => {
+    setCountState(count);
+  }, [count]);
+
+  function reset(e) {
     e.preventDefault();
-    alert(`Hello ${name}!`);
+    setCountState(0);
   }
   return (
     <React.Fragment>
-      <h1 className="{name}" onClick={handleClick}>
-        Hello {name}!
+      <h1 className="c1" onClick={reset}>
+        Hello {name} {countState}!
       </h1>
       <div>
         Svelte to <b>React</b>!

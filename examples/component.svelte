@@ -1,11 +1,13 @@
 <script>
+  export let count;
   export let name;
-
-  function handleClick(e) {
+ 
+  function reset(e) {
     e.preventDefault()
-    alert(`Hello ${name}!`)
+    count = 0
   }
+
 </script>
 
-<h1 class={name} on:click=handleClick>Hello {name}!</h1>
+<h1 class="c1" on:click=reset>Hello {name} {count}!</h1>
 <div>Svelte to <b>React</b>!</div>
